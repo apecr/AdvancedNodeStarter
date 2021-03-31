@@ -22,6 +22,10 @@ module.exports = app => {
 
     // Do we have any cached data in redis related to this query
     const cachedBlogs = await client.get(req.user.id)
+    if (cachedBlogs){
+      console.log('Serving from cache')
+      return res.send(JSON.parse(cachedBlogs))
+    }
 
     // if so, then respond to the request right away and return
 
@@ -31,6 +35,8 @@ module.exports = app => {
     const blogs = await Blog.find({ _user: req.user.id })
 
     res.send(blogs)
+    console.log('Serving from MongoDB')
+    client.set(req.user.id, JSON.stringify(blogs))
   })
 
   app.post('/api/blogs', requireLogin, async(req, res) => {
